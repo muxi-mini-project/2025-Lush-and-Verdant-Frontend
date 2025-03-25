@@ -21,7 +21,7 @@ export default function FirstPage(){
   },[])
   const router=useRouter()
   const handelePress=()=>{
-    router.push('/(reallyTabs)/mainPage')
+    router.push('/(tabsin)/login')
   }
   return (
        <TouchableOpacity activeOpacity={0.9}  onPress={handelePress} style={styles.background}>

@@ -1,29 +1,36 @@
-import { Text, View, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { Text, View, StyleSheet } from "react-native";
+import { Link } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
 
 export default function Society() {
+  const router = useRouter();
+  useEffect(() => {});
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>这是社交</Text>
-      <Link href="/(tabsin)/login" style={styles.test}>这是一个用于测试的链接</Link>
-      <Link href="/(tabsindex)/index1" style={styles.test}>这是一个用于测试的链接</Link>
-    </View>
+    <LinearGradient
+      colors={["#D8F9C0", "#F2FFCF", "#FFFFFF"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      locations={[0, 0.27, 0.79]}
+      style={styles.container}
+    ></LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#25292e",
+    justifyContent: "center",
+    alignItems: "center",
   },
   text: {
-    color: '#fff',
+    color: "#fff",
   },
-  test:{
+  test: {
     fontSize: 20,
-    textDecorationLine: 'underline',
-    color: '#fff',
+    textDecorationLine: "underline",
+    color: "#fff",
   },
 });
