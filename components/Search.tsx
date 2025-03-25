@@ -17,7 +17,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ placeholder = '请输入小组名
 
   return (
     <View style={styles.container}>
-    <Image source={require("../assets/images/Slice 20.png")} style={{width:deviceWidthDp*0.06,height:deviceWidthDp*0.06,position:'absolute',left:-deviceWidthDp*0.37,top:deviceWidthDp*0.08,zIndex:2}}></Image>
+    <Image source={require("../assets/images/Slice 20.png")} style={{width:deviceWidthDp*0.06,height:deviceWidthDp*0.06,position:'absolute',left:-deviceWidthDp*0.37,top:deviceHeightDp*0.035,zIndex:2}}></Image>
     <TextInput
         style={styles.input}
         placeholder={placeholder}
@@ -41,15 +41,17 @@ const styles = StyleSheet.create({
   input: {
      position:'absolute',
      left:-deviceWidthDp*0.4,
-     top:deviceWidthDp*0.055,
+     top:deviceWidthDp*0.058,
      zIndex:1,
-    height:deviceHeightDp*0.05,
+    height:deviceHeightDp*0.04,
     width:deviceWidthDp*0.8,
     paddingHorizontal: 40,
     paddingVertical:deviceHeightDp*0.00,
-    fontSize: deviceHeightDp*0.024,
-    backgroundColor: '#D9D9D9',
-    borderRadius: 9,
+    fontSize: deviceHeightDp*0.015,
+    letterSpacing: 0.5,
+    color:"raba(0,0,0,0.5)",
+    backgroundColor: 'rgba(244, 244, 244, 0.51)',
+    borderRadius: 25,
   },
   button: {
     
@@ -59,10 +61,12 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   buttonText: {
-    color: 'black',
+    fontFamily:"ABeeZee",
+    color: '5E5E5E',
     fontSize: 16,
     position:'absolute',
     left:deviceWidthDp*0.4,
+    letterSpacing:0.5,
     top:deviceWidthDp*0.05,
   },
 });

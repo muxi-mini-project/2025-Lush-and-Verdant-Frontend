@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native';
+import { BlurView } from 'expo-blur';
 
 const deviceWidthDp = Dimensions.get('screen').width;
 const deviceHeightDp = Dimensions.get('screen').height;
@@ -51,7 +52,7 @@ const GroupCard: React.FC<GroupCardProps> = ({
         <View style={styles.textContainer}>
           <Text style={styles.groupName}>{groupName}</Text>
           <Text style={styles.groupDesc}>
-            {groupDesc.length > 100 ? `${groupDesc.substring(0, 100)}...` : groupDesc}
+           
           </Text>
         </View>
       </View>
@@ -60,15 +61,34 @@ const GroupCard: React.FC<GroupCardProps> = ({
         <Text style={styles.buttonText}>简介</Text>
       </TouchableOpacity>
 
-      <Modal visible={isModalVisible} animationType="slide" onRequestClose={toggleModal}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>小组简介</Text>
-          <Text>{groupDesc}</Text>
-          <TouchableOpacity activeOpacity={1} style={styles.closeButton} onPress={toggleModal}>
-            <Text style={styles.buttonText}>关闭</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+      <Modal
+  transparent={true}
+  visible={isModalVisible}
+  animationType="fade"
+  onRequestClose={toggleModal}
+>
+  {/* 全屏容器 */}
+  <View style={styles.modalContainer}>
+    {/* 虚化背景层：铺满整个屏幕 */}
+    <BlurView
+      style={styles.blurBackground}
+      tint='light'
+      intensity={100}       // 可根据需要调整虚化强度
+            // light / dark / xlight 等类型
+    
+    />
+    {/* Modal 内容层 */}
+    <View style={styles.modalContent}>
+      <Text style={{ color: 'rgba(0,0,0,0.5)', fontSize: deviceHeightDp * 0.02 }}>
+        {groupDesc}
+      </Text>
+      <TouchableOpacity activeOpacity={1} style={styles.closeButton} onPress={toggleModal}>
+        <Text style={styles.buttonText}>关闭</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
 
       <TouchableOpacity
         activeOpacity={1}
@@ -83,6 +103,12 @@ const GroupCard: React.FC<GroupCardProps> = ({
 };
 
 const styles = StyleSheet.create({
+  modalContainer:{
+     flex:1,
+  },
+  blurBackground:{
+   ...StyleSheet.absoluteFillObject
+  },
   card: {
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -101,18 +127,24 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   avatar: {
-    width: deviceWidthDp * 0.12,
-    height: deviceWidthDp * 0.12,
-    backgroundColor: 'white',
+    width: deviceHeightDp*0.05,
+    height: deviceHeightDp*0.05,
+    
     borderRadius: 25,
+    borderWidth:2,
     marginRight: 10,
+    borderColor:'rgba(164, 164, 164,0.2)'
   },
   textContainer: {
     justifyContent: 'center',
   },
   groupName: {
-    fontSize: deviceHeightDp * 0.02,
-    fontWeight: 'bold',
+    fontSize: deviceHeightDp * 0.016,
+    letterSpacing:1,
+    fontWeight:"semibold",
+    fontFamily:"ABeeZee-Regular",
+    marginLeft:deviceWidthDp*0.02,
+    marginTop:deviceHeightDp*0.01
   },
   groupDesc: {
     fontSize: deviceHeightDp * 0.015,
@@ -121,34 +153,40 @@ const styles = StyleSheet.create({
   button: {
     position: 'absolute',
     left: deviceWidthDp * 0,
-    top: deviceHeightDp * 0.08,
+    top: deviceHeightDp * 0.07,
     width: deviceWidthDp * 0.95,
     backgroundColor: 'transparent',
     borderRadius: 5,
     alignItems: 'center',
-    borderTopColor: '#A4A4A4',
-    borderTopWidth: 0.5,
+    borderTopColor: 'rgba(164, 164, 164,0.2)',
+    borderTopWidth: 1
+  
   },
   buttonText: {
     color: '#000000',
-    fontSize: deviceHeightDp * 0.015,
+    fontSize: deviceHeightDp * 0.017,
+    letterSpacing:1,
     textAlign: 'center',
+    fontWeight: 600,
+    fontFamily: "ABeeZee"
   },
   modalContent: {
-    flex: 1,
-    justifyContent: 'center',
+    marginTop: deviceHeightDp * 0.3,
+    width: deviceWidthDp * 0.95,
+    height: deviceHeightDp * 0.2,
+    alignSelf: 'center',
+    borderWidth:1,
+    borderColor:"rgba(0,0,0,0.1)",
+    borderRadius: 20,
+    justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
+  
   closeButton: {
     width: deviceWidthDp * 0.15,
-    height: deviceHeightDp * 0.05,
+    height: deviceHeightDp * 0.03,
     display: 'flex',
     justifyContent: 'center',
     backgroundColor: '#EFFFD0',
@@ -156,8 +194,8 @@ const styles = StyleSheet.create({
   },
   joinButton: {
     position: 'absolute',
-    left: deviceWidthDp * 0.7,
-    top: deviceHeightDp * 0.05,
+    left: deviceWidthDp * 0.75,
+    top: deviceHeightDp * 0.025,
     width: deviceWidthDp * 0.15,
     backgroundColor: '#EFFFD0',
     borderRadius: 20,
