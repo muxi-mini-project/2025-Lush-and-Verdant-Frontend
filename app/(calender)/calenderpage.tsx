@@ -14,13 +14,19 @@ import {
 import { Calendar } from 'react-native-calendars';
 import { useGroups } from '../groupprovider';
 import { post,get,del,put } from '@/components/Api';
+import { result } from 'lodash';
 
 const { width: deviceWidth, height: deviceHeight } = Dimensions.get('window');
 
 interface EventItem {
-  id: string;
+ 
   title: string;
   details: string;
+  goal_id:string;
+  task_id:string,
+  backgroundColor?: string;
+  textColor?: string;
+  
 }
 
 interface EventsByDate {
@@ -29,22 +35,7 @@ interface EventsByDate {
 
 // 定义初始数据，格式为 'YYYY-MM-DD'
 const initialEvents: EventsByDate = {
-  '2025-03-10': [
-    { id: '1', title: '团队会议', details: '讨论项目进展' },
-    { id: '2', title: '客户通话', details: '下午2点与客户沟通' },
-  ],
-  '2025-03-15': [
-    { id: '1', title: 'React 研讨会', details: '参加React线上研讨会' },
-  ],
-  '2025-03-20': [
-    { id: '1', title: '家庭晚餐', details: '7点与家人共进晚餐' },
-    { id: '2', title: '健身', details: '晚上锻炼身体' },
-    { id: '3', title: '月度报告', details: '完成本月工作报告' },
-  ],
-  '2025-04-10': [
-    { id: '1', title: '团队会议', details: '讨论项目进展' },
-    { id: '2', title: '客户通话', details: '下午2点与客户沟通' },
-  ],
+  
 };
 
 /** 自定义日历单元（日期格），显示日期数字和最多2个事件预览 */
@@ -52,16 +43,17 @@ interface DayCellProps {
   date: any;
   events: EventItem[];
   onPress: (dateString: string) => void;
+  isToday:boolean;
 }
 
-const DayCell = ({ date, events, onPress }: DayCellProps) => (
-  <Pressable style={styles.dayCell} onPress={() => onPress(date.dateString)}>
+const DayCell = ({ date, events, onPress,isToday }: DayCellProps) => (
+  <Pressable style={[styles.dayCell,isToday&&styles.todayCell]} onPress={() => onPress(date.dateString)}>
     {/* 日期数字放在左上角 */}
-    <Text style={styles.dayText}>{date.day}</Text>
+    <Text style={[styles.dayText,isToday&&styles.todayText]}>{date.day}</Text>
     <View style={styles.eventsPreview}>
-      {events.slice(0, 2).map(event => (
-        <View key={event.id} style={styles.eventPreview}>
-          <Text style={styles.eventPreviewText} numberOfLines={1}>
+      {events.slice(0, 2).map((event,index) => (
+        <View key={`${event.task_id}-${index}`} style={[styles.eventPreview,{backgroundColor:event.backgroundColor ||'#C9EC20'}]}>
+          <Text style={[styles.eventPreviewText, { color: event.textColor || '#2e7d32' }]} numberOfLines={1}>
             {event.title}
           </Text>
         </View>
@@ -86,6 +78,7 @@ const DayEventModal = ({ date, events, onClose, onUpdate }: DayEventModalProps) 
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
+  const{goal_id,setGoalId,task_id,setTaskId,flag,setFlag}=useGroups()
 
   const openAddModal = () => {
     setEditMode('add');
@@ -99,19 +92,27 @@ const DayEventModal = ({ date, events, onClose, onUpdate }: DayEventModalProps) 
     setSelectedEvent(event);
     setTitle(event.title);
     setDetails(event.details);
+    console.log(event.details)
+    console.log(event.title)
+    setGoalId(event.goal_id)
+    console.log(event.goal_id)
+    console.log(event.task_id)
     setSubModalVisible(true);
+    setTaskId(event.task_id)
   };
 
   const handleCreate = async() => {
+    const bgColors = ["#C9EC20", "#ECAB20"];
+    const textColors: { [key: string]: string } = {
+      "#C9EC20": "#2e7d32",
+      "#ECAB20": "red",
+    };
+  
     if (!title.trim()) {
       Alert.alert('请输入事件名称');
       return;
     }
-    const newEvent: EventItem = {
-      id: Date.now().toString(),
-      title: title.trim(),
-      details: details.trim(),
-    };
+  
     const eventData ={
       date:date,
       tasks:[
@@ -124,33 +125,81 @@ const DayEventModal = ({ date, events, onClose, onUpdate }: DayEventModalProps) 
     try{
         const  response=await post("http://8.129.3.142:8080/goal/MakeGoal",eventData,true)
         const result=await response.json()
-        alert(result.message)
+        setGoalId(result.data.goal_id)
+        console.log(result.data.goal_id)
+        console.log(result.data.task_ids[0])
+        
+        const randomIndex = Math.floor(Math.random() * bgColors.length);
+        const chosenBg = bgColors[randomIndex];
+        const chosenText = textColors[chosenBg];
+        const newEvent: EventItem = {
+          
+          title: title.trim(),
+          details: details.trim(),
+          goal_id:result.data.goal_id,
+          task_id:result.data.task_ids[0],
+          backgroundColor: chosenBg,
+          textColor: chosenText,
+      
+        };
+        const updated = [...localEvents, newEvent];
+        setLocalEvents(updated);
+        onUpdate(date, updated);
+        setFlag(!flag)
+        console.log(newEvent)
     }catch(e){
       alert("添加任务失败")
     }
-    const updated = [...localEvents, newEvent];
-    setLocalEvents(updated);
-    onUpdate(date, updated);
+   
+  
+   
+   
     setSubModalVisible(false);
   };
 
-  const handleUpdate = () => {
-    if (!selectedEvent) return;
+  const handleUpdate = async(id:string) => {
+    
+    
     const updated = localEvents.map(event =>
-      event.id === selectedEvent.id
+      event.goal_id === id
         ? { ...event, title: title.trim(), details: details.trim() }
         : event
     );
+  
     setLocalEvents(updated);
     onUpdate(date, updated);
     setSubModalVisible(false);
+    console.log(task_id)
+     console.log(goal_id)
+    try{
+      const updateData={
+            details:details,
+            title:title,
+      }
+      console.log(goal_id)
+      console.log(updateData)
+      const response2=await put(`http://8.129.3.142:8080/goal/UpdateGoal/${task_id}`,updateData,true)
+      console.log("修改")
+      
+    }
+      catch(e){
+        console.log(e)
+      }
   };
 
-  const handleDelete = (id: string) => {
-    const updated = localEvents.filter(event => event.id !== id);
+  const handleDelete = async(id: string) => {
+    const updated = localEvents.filter(event => event.goal_id !== id);
     setLocalEvents(updated);
     onUpdate(date, updated);
     setSubModalVisible(false);
+  
+    try{
+       
+       const response1=await del(`http://8.129.3.142:8080/goal/DeleteGoal/${task_id}`,true)
+       console.log("删除成功")
+    }catch(e){
+      console.log(e)
+    }
   };
 
   return (
@@ -159,9 +208,9 @@ const DayEventModal = ({ date, events, onClose, onUpdate }: DayEventModalProps) 
         <View style={styles.modalContentFull}>
          
           <ScrollView style={styles.modalEventList}>
-            {localEvents.map(event => (
+            {localEvents.map((event,index) => (
               <Pressable
-                key={event.id}
+                key={event.goal_id}
                 style={styles.modalEventItem}
                 onPress={() => openEditModal(event)}
               >
@@ -207,14 +256,14 @@ const DayEventModal = ({ date, events, onClose, onUpdate }: DayEventModalProps) 
                     {editMode === 'edit' && (
                       <Pressable
                         style={[styles.button, styles.deleteButton]}
-                        onPress={() => selectedEvent && handleDelete(selectedEvent.id)}
+                        onPress={() => selectedEvent && handleDelete(selectedEvent.goal_id)}
                       >
                         <Text style={{ color: 'darkred',fontWeight: '500',}}>删除</Text>
                       </Pressable>
                     )}
                     <Pressable
                       style={[styles.button, styles.submitButton]}
-                      onPress={editMode === 'add' ? handleCreate : handleUpdate}
+                      onPress={editMode === 'add' ? handleCreate :()=> {if(selectedEvent){handleUpdate(selectedEvent.goal_id)}}}
                     >
                       <Text style={styles.buttonText}>
                         {editMode === 'add' ? '提交' : '保存'}
@@ -293,10 +342,11 @@ const CustomWeekDays = () => {
 /* 整体日历组件 */
 
 const CalendarWithEvents = () => {
-  const [eventsByDate, setEventsByDate] = useState<EventsByDate>(initialEvents);
+
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const {userId}=useGroups();
+  const {userId,eventsByDate,setEventsByDate,flag,setFlag}=useGroups();
+ 
 
   const handleDayPress = (dateString: string) => {
     setSelectedDate(dateString);
@@ -307,9 +357,15 @@ const CalendarWithEvents = () => {
   };
 
   const renderDay = (props: any) => {
+    
     const { date } = props;
+    const today = new Date();
+    const todayString = formatDate(today); // 获取 'YYYY-MM-DD' 格式的当前日期
+    const isToday = date.dateString === todayString; // 判断是否是今天
     const dayEvents = eventsByDate[date.dateString] || [];
-    return <DayCell date={date} events={dayEvents} onPress={handleDayPress} />;
+   
+   
+    return <DayCell date={date} events={dayEvents} onPress={handleDayPress} isToday={isToday} />;
   };
 
   const onPrevMonth = () => {
@@ -323,7 +379,22 @@ const CalendarWithEvents = () => {
     next.setMonth(next.getMonth() + 1);
     setCurrentMonth(next);
   };
-
+  useEffect(()=>{
+    const getEvents = async () => {
+      try{
+          const response = await get("http://8.129.3.142:8080/goal/HistoricalGoal",true)
+          const result = await response.json()
+          console.log(result.data)
+          setEventsByDate(result.data)
+          console.log("获取成功")
+      }catch(e){
+        alert("获取失败")
+        console.log(e)
+      }
+      
+    };
+    getEvents()
+  },[flag])
   return (
     <LinearGradient colors={['#D8F9C0', '#F2FFCF', '#FFFFFF']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} locations={[0, 0.27, 0.79]} style={styles.calendarContainer}>
       <CustomHeader currentMonth={currentMonth} onPrev={onPrevMonth} onNext={onNextMonth} />
@@ -373,6 +444,12 @@ const CalendarWithEvents = () => {
 };
 
 const styles = StyleSheet.create({
+  todayText:{
+    color:'#ECAB20',
+  },
+  todayCell:{
+     backgroundColor:'rgba(201, 236, 32, 0.3)', 
+  },
   calendarContainer: {
     flex: 1,
     display:'flex',
@@ -381,12 +458,7 @@ const styles = StyleSheet.create({
   },
   calendar: {
   display:'flex',
-  alignItems:'stretch',
-  
- 
-
-  
-   
+  alignItems:'stretch',   
     width: deviceWidth*1,
    backgroundColor:'transparent'
     
@@ -394,7 +466,7 @@ const styles = StyleSheet.create({
   },
   dayCell: {
     width: deviceWidth / 7 - StyleSheet.hairlineWidth,
-    height: (deviceHeight / 14) *1.5,
+    height: (deviceHeight / 13) *1.5,
     marginHorizontal: StyleSheet.hairlineWidth / 2,
 
     
@@ -414,7 +486,9 @@ const styles = StyleSheet.create({
   eventPreview: {
     backgroundColor: '#C9EC20',
     borderRadius: 2,
-    paddingHorizontal: 2,
+    width:"90%",
+    marginLeft: deviceWidth*0.01,
+    paddingHorizontal: 1,
     marginBottom: 1,
   },
   eventPreviewText: {
@@ -443,9 +517,9 @@ const styles = StyleSheet.create({
     color: '#2c3e50',
   },
   monthText: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: '#444E38',
   },
   weekdaysContainer: {
     flexDirection: 'row',
@@ -456,7 +530,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: deviceWidth*0.04,
-    fontWeight: '700',
+    fontWeight: '200',
     color: '#000000',
     paddingVertical: 6,
   },

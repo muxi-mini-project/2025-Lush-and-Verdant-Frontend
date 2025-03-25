@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   active: {
-    backgroundColor: '#CDF3AA', // 激活时的绿色背景
+    backgroundColor: '#C9EC20', // 激活时的绿色背景
   },
   slider: {
     width: deviceHeightDp * 0.03,

@@ -1,4 +1,11 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  Key,
+  useEffect
+} from "react";
 
 type Member = {
   userId: string;
@@ -22,6 +29,19 @@ type Group = {
   members: Member[];
   messages: Message[];
 };
+interface EventItem {
+  title: string;
+  details: string;
+  goal_id: string;
+  task_id: string;
+}
+
+interface EventsByDate {
+  [date: string]: EventItem[];
+}
+type Flag = {
+  flag: boolean;
+};
 
 type GroupContextType = {
   groups: Group[];
@@ -36,9 +56,25 @@ type GroupContextType = {
   userId: string;
   setUserId: React.Dispatch<React.SetStateAction<string>>;
   user: string; // 新增user状态
-  setUser: React.Dispatch<React.SetStateAction<string>>; 
-  slogan:string;
-  setSlogan: React.Dispatch<React.SetStateAction<string>>;// 新增修改user的方法
+  setUser: React.Dispatch<React.SetStateAction<string>>;
+  slogan: string;
+  setSlogan: React.Dispatch<React.SetStateAction<string>>; // 新增修改user的方法
+  email: string;
+  setEmail: React.Dispatch<React.SetStateAction<string>>;
+  goal_id: string;
+  setGoalId: React.Dispatch<React.SetStateAction<string>>;
+  task_id: string;
+  setTaskId: React.Dispatch<React.SetStateAction<string>>;
+  eventsByDate: EventsByDate;
+  setEventsByDate: React.Dispatch<React.SetStateAction<EventsByDate>>;
+  flag: boolean;
+  setFlag: React.Dispatch<React.SetStateAction<boolean>>;
+  flag1: boolean;
+  setFlag1: React.Dispatch<React.SetStateAction<boolean>>;
+  token: string;
+  setToken: React.Dispatch<React.SetStateAction<string>>;
+  ws: WebSocket | null;
+  createWebSocket: (token: string) => void;
 };
 
 const GroupContext = createContext<GroupContextType>({} as GroupContextType);
@@ -46,58 +82,60 @@ const GroupContext = createContext<GroupContextType>({} as GroupContextType);
 interface GroupProviderProps {
   children: ReactNode;
 }
-
+const initialEvents: EventsByDate = {};
 export const GroupProvider: React.FC<GroupProviderProps> = ({ children }) => {
-  const [groups, setGroups] = useState<Group[]>([
-    {
-      groupId: '1',
-      groupName: '小组一',
-      groupDesc: '这是小组一的简介。',
-      groupAvatar: 'https://example.com/avatar1.png',
-      isJoined: true,
-      members: [
-        {
-          userId: 'user1',
-          userName: '当前用户',
-          avatar: 'https://example.com/user1-avatar.png',
-        },
-        {
-          userId: 'user2',
-          userName: '其他用户',
-          avatar: 'https://example.com/user2-avatar.png',
-        },
-      ],
-      messages: [
-        {
-          messageId: 'm1',
-          senderId: 'user1',
-          content: '大家好！',
-          timestamp: new Date(2024, 5, 15, 10, 30),
-        },
-        {
-          messageId: 'm2',
-          senderId: 'user2',
-          content: '大家好！',
-          timestamp: new Date(2024, 5, 15, 10, 30),
-        },
-        {
-          messageId: 'm3',
-          senderId: 'user2',
-          content: '大家！',
-          timestamp: new Date(2024, 5, 15, 10, 30),
-        },
-      ],
-    },
-  ]);
+  const [groups, setGroups] = useState<Group[]>([]);
 
   const [filteredGroups, setFilteredGroups] = useState(groups);
   const [isLogin, setIsLogin] = useState(false);
-  const [userId, setUserId] = useState<string>('');
-  const [user, setUser] = useState<string>(''); // 初始化user状态
-  const [slogan,setSlogan]=useState<string>('');
+  const [userId, setUserId] = useState<string>("");
+  const [user, setUser] = useState<string>(""); // 初始化user状态
+  const [slogan, setSlogan] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [goal_id, setGoalId] = useState<string>("");
+  const [task_id, setTaskId] = useState<string>("");
+  const [eventsByDate, setEventsByDate] = useState<EventsByDate>(initialEvents);
+  const [flag, setFlag] = useState(false);
+  const [flag1, setFlag1] = useState<boolean>(false);
 
-  const updateGroup = (groupId: string, groupName: string, groupDesc: string) => {
-    const updatedGroups = groups.map(group =>
+  const [token, setToken]=useState<string>("")
+  const [ws,setWs]=useState<WebSocket | null>(null)
+  const createWebSocket = (token: string) => {
+ 
+    if(ws){
+      ws.close()
+    }
+    const socket = new WebSocket(`ws://8.129.3.142:8080/chat/ws?token=${token}`);
+    socket.onopen = () => {
+      console.log("WebSocket 连接已打开");
+    };
+    socket.onmessage = (event) => {
+      console.log("WebSocket 收到消息:",event.data)
+  };
+  socket.onerror = (error) => {
+    console.error("WebSocket 发生错误:", error);
+  };
+  socket.onclose = () => {
+    console.log("WebSocket 连接已关闭");
+  };
+
+setWs(socket)
+}
+useEffect(()=>{
+ if(isLogin){
+  createWebSocket(token)
+ }
+ else{
+ return () => {
+  if(ws)ws.close
+  }}
+},[isLogin,token,flag1])
+  const updateGroup = (
+    groupId: string,
+    groupName: string,
+    groupDesc: string
+  ) => {
+    const updatedGroups = groups.map((group) =>
       group.groupId === groupId
         ? { ...group, groupName, groupDesc, isJoined: true }
         : group
@@ -107,7 +145,7 @@ export const GroupProvider: React.FC<GroupProviderProps> = ({ children }) => {
   };
 
   const leaveGroup = (groupId: string) => {
-    const updatedGroups = groups.map(group =>
+    const updatedGroups = groups.map((group) =>
       group.groupId === groupId ? { ...group, isJoined: false } : group
     );
     setGroups(updatedGroups);
@@ -122,7 +160,7 @@ export const GroupProvider: React.FC<GroupProviderProps> = ({ children }) => {
       timestamp: new Date(),
     };
 
-    const updatedGroups = groups.map(group => {
+    const updatedGroups = groups.map((group) => {
       if (group.groupId === groupId) {
         return {
           ...group,
@@ -150,11 +188,29 @@ export const GroupProvider: React.FC<GroupProviderProps> = ({ children }) => {
         setIsLogin,
         userId,
         setUserId,
-        user,     // 暴露user状态
-        setUser, 
-      setSlogan,
-      slogan
- // 暴露修改user的方法
+        user, // 暴露user状态
+        setUser,
+        setSlogan,
+        slogan,
+        email,
+        setEmail,
+        goal_id,
+        setGoalId,
+        task_id,
+        setTaskId,
+        eventsByDate,
+        setEventsByDate,
+        flag,
+        setFlag,
+        token,
+        setToken,
+        ws,
+        createWebSocket,
+        flag1,
+        setFlag1,
+      
+      
+        // 暴露修改user的方法
       }}
     >
       {children}

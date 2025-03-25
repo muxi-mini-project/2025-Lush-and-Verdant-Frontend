@@ -63,7 +63,7 @@ async function post(url: string = ' ', data: PostData, isToken: boolean = false)
 
 async function del(
   url: string = ' ',
-  pathParam: string,
+ 
   isToken: boolean = false
 ): Promise<Response> {
   const headers = new Headers();
@@ -77,11 +77,9 @@ async function del(
   headers.append('Content-Type', 'application/json');
 
   // 拼接路径参数到 URL 中，例如：'/api/resource' + '/123'
-  const fullUrl = url.endsWith('/')
-    ? `${url}${pathParam}`
-    : `${url}/${pathParam}`;
 
-  const response = await fetch(fullUrl, {
+
+  const response = await fetch(url, {
     method: 'DELETE',
     headers,
   });

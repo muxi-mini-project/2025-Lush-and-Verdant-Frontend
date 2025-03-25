@@ -30,6 +30,9 @@ export default function ReallyTabLayout() {
       
         title: '森林', 
         headerShown:false,
+        tabBarLabelStyle:{
+          marginTop:-4,
+       },
         tabBarStyle: {
           position: 'absolute',
           backgroundColor: 'transparent',
@@ -42,7 +45,7 @@ export default function ReallyTabLayout() {
           <View style={{backgroundColor:'##EFFEDC', height:50,borderColor:'red'}}><Text></Text></View>
 ),
         tabBarIcon:({focused})=>{const iconSoucer=focused?require('../../assets/images/Slice 17.png'):require('../../assets/images/Slice 19.png')
-            return(<Image source={iconSoucer} style={{width:30,height:34}}></Image>)
+            return(<Image source={iconSoucer} style={{width:24,height:24,resizeMode:'center'}}></Image>)
             
         }
       }}/>
@@ -50,43 +53,56 @@ export default function ReallyTabLayout() {
       name="circle" 
       options={{ 
         title: '同心圆', 
+        tabBarLabelStyle:{
+          marginTop:-4,
+       },
         headerShown:false,
         tabBarStyle:{position:'absolute',shadowColor:'transparent',elevation:0,borderTopWidth:0},
         tabBarBackground:()=>(
-          <View style={{backgroundColor:'#FFFFFF', height:50,borderColor:'red'}}><Text></Text></View>
+          <View style={{backgroundColor:'#EFFEDC', height:50,borderColor:'red'}}><Text></Text></View>
 ),
         tabBarIcon:({focused})=>{const iconSoucer=focused?require('../../assets/images/Slice 12.png'):require('../../assets/images/Slice 8.png')
-            return(<Image source={iconSoucer} style={{width:30,height:30}}></Image>)
+            return(<Image source={iconSoucer} style={{width:24,height:24,resizeMode:'center'}}></Image>)
         }}} />
           <Tabs.Screen 
       name="mainPage" 
       options={{ 
         headerShown:false,
         title: '主页', 
+        tabBarLabelStyle:{
+          marginTop:-4,
+       },
         tabBarBackground:()=>(
           <View style={{backgroundColor:'transparent', height:50,borderColor:'red'}}><Text></Text></View>
 ),
          tabBarIcon: ({focused})=>{const iconSoucer=focused?require('../../assets/images/Slice 15.png'):require('../../assets/images/Slice 16.png')
-            return(<Image source={iconSoucer} style={{width:30,height:34}}></Image>)
+            return(<Image source={iconSoucer} style={{width:24,height:24,resizeMode:'center'}}></Image>)
         }      }} />
       <Tabs.Screen 
       name="society" 
       options={{ 
         title: '串门', 
+        tabBarLabelStyle:{
+           marginTop:-4,
+        },
+        headerShown:false,
         tabBarIcon:({focused})=>{const iconSoucer=focused?require('../../assets/images/Slice 10.png'):require('../../assets/images/Slice 9.png')
-            return(<Image source={iconSoucer} style={{width:34,height:30}}></Image>)
+            return(<Image source={iconSoucer} style={{width:24,height:24,resizeMode:'center'}}></Image>)
         }}} />
           <Tabs.Screen 
       name="mine" 
       options={{ 
         title: '我的', 
         headerShown:false,
+        tabBarLabelStyle:{
+          marginTop:-4,
+       },
         tabBarStyle:{position:'absolute',shadowColor:'transparent',elevation:0,borderTopWidth:0},
         tabBarBackground:()=>(
                 <View style={{backgroundColor:'#FFFFFF', height:50}}><Text></Text></View>
       ),
         tabBarIcon:({focused})=>{const iconSoucer=focused?require('../../assets/images/Slice 13.png'):require('../../assets/images/Slice 14.png')
-            return(<Image source={iconSoucer} style={{width:34,height:30}}></Image>)
+            return(<Image source={iconSoucer} style={{width:24,height:24,resizeMode:'center'}}></Image>)
         }  }} />
     </Tabs>
   );
