@@ -15,6 +15,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { post, get } from "@/components/Api";
 
+
 const deviceWidthDp = Dimensions.get("screen").width;
 const deviceHeightDp = Dimensions.get("screen").height;
 import { useEffect, useState } from "react";
@@ -32,10 +33,14 @@ export default function ChatRoom() {
     userId: string;
   };
   const router = useRouter();
+  const PlaceholderImage = require("../../assets/images/tree1.png");
   const { groups, sendMessage,ws,setFlag1,flag1,setGroups,setFilteredGroups } = useGroups();
   const [newMessage, setNewMessage] = useState("");
   const [userDetails, setUserDetails] = useState<UserDetails[]>([]);
-
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(
+    PlaceholderImage
+  );
+  
   useEffect(() => {
     const getUserDetails = async () => {
       try {
@@ -55,6 +60,7 @@ export default function ChatRoom() {
         const updatedUsers = await Promise.all(
           formattedUsers.map(async (user: any) => {
             try {
+             
               const id = user.userId;
               const response1 = await get(
                 `http://8.129.3.142:8080/image/user/get/${id}`,
@@ -63,7 +69,9 @@ export default function ChatRoom() {
               const result1 = await response1.json();
               const response2=await get(`http://8.129.3.142:8080/user/info/${id}`,true)
               const  result2=await response2.json();
-              return { ...user, avater: result1.data,username:result2.data.username };
+              console.log(result1.data)
+              
+              return { ...user, avater: result1.data!==null?result1.data:"https://cdn.pixabay.com/photo/2025/02/17/16/04/dog-9413394_1280.jpg",username:result2.data.username };
             } catch (e) {
               console.log(e);
               return user;
@@ -135,7 +143,7 @@ export default function ChatRoom() {
         
         ws.send(JSON.stringify(data))
         setFlag1(!flag1)
-        console.log("消息已经成功发送",data)
+        console.log("消息已经成功",data)
       }
       setNewMessage("");
     }
@@ -144,6 +152,55 @@ export default function ChatRoom() {
     console.log(groupId);
     router.push(`/(groupsettings)/${groupId}`);
   };
+  useEffect(() => {
+    if (ws) {
+      ws.onmessage = (event) => {
+        try {
+          const receivedData = JSON.parse(event.data);
+          // 检查消息类型是否为群聊消息
+          if (receivedData.type === "group"&&receivedData.from!==userId) {
+            const newMsg = {
+              messageId: Date.now().toString() + Math.random().toString(),
+              senderId: receivedData.from,
+              content: receivedData.content,
+              timestamp: new Date()
+            };
+            // 更新 groups 和 filteredGroups 中对应群的消息列表
+            setGroups((prevGroups) =>
+              prevGroups.map((group) => {
+                if (group.groupId === receivedData.to) {
+                  return {
+                    ...group,
+                    messages: [...group.messages, newMsg],
+                  };
+                }
+                return group;
+              })
+            );
+            setFilteredGroups((prevGroups) =>
+              prevGroups.map((group) => {
+                if (group.groupId === receivedData.to) {
+                  return {
+                    ...group,
+                    messages: [...group.messages, newMsg],
+                  };
+                }
+                return group;
+              })
+            );
+          }
+        } catch (error) {
+          console.log("解析消息失败:", error);
+        }
+      };
+  
+      // 可选：组件卸载时移除 onmessage 监听器
+      return () => {
+        ws.onmessage = null;
+      };
+    }
+  }, [ws, setGroups, setFilteredGroups]);
+  
   return (
     <LinearGradient
       colors={["#D8F9C0", "#F2FFCF", "#FFFFFF"]}
@@ -419,7 +476,7 @@ const styles = StyleSheet.create({
   },
   otherMessage: {
     alignSelf: "flex-start",
-    backgroundColor: "grey",
+    backgroundColor: "white",
     borderTopLeftRadius: 4,
   },
   senderName: {

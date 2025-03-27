@@ -78,7 +78,7 @@ export default function Register() {
           password: password,
           code: code,
           device_num: email,
-          username: "李炜鹏",
+          username: "无敌了",
         };
         const response = await post(
           "http://8.129.3.142:8080/user/register",
@@ -95,6 +95,7 @@ export default function Register() {
           router.push("/(tabsin)/login");
         }
       } catch (error) {
+        alert("注册失败")
         console.error("注册失败:", error);
       }
     }

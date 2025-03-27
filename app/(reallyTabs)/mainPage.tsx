@@ -170,8 +170,11 @@ export default function MainPage() {
           "http://8.129.3.142:8080/slogan/SearchSlogan",
           true
         );
+      
+    
         const result = await response.json();
-
+        console.log(result.message)
+        console.log("获取到的标语",result.data);
         setSlogan(result.data);
       } catch (error) {
         alert("获取失败");

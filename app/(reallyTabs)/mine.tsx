@@ -153,7 +153,8 @@ export default function Mine() {
           true
         );
         const result2 = await response2.json();
-        setSelectedImage(result2.data);
+        console.log(result2.data)
+        setSelectedImage(result2.data?result2.data:PlaceholderImage);
       } catch (e) {
         console.log(e);
       }

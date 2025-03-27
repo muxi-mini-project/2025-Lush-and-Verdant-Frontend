@@ -45,6 +45,8 @@ export default function LoginPage() {
           SecureStore.setItem("token", result.data.token);
           setToken(result.data.token);
           setIsLogin(true);
+          setEmail(email)
+          console.log(email)
           setUser(result.data.user_id);
           setIsLogin(true);
           router.push("../(reallyTabs)/mainPage");

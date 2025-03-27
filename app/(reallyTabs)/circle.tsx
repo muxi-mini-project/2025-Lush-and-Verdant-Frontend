@@ -76,7 +76,7 @@ export default function Circle() {
             );
             const result3 = await response3.json();
             console.log(result3.data);
-
+            console.log("加入小组的状态",result2.code)
             return {
               ...group,
               isJoined: result2.code === 200,
@@ -167,7 +167,11 @@ export default function Circle() {
     }
   };
 
-  const handlePress1 = (buttonId: string) => {
+  const handlePress1 = async(buttonId: string) => {
+    const initialGroups = await getGroupfirst(0);
+    if (!initialGroups) return;
+    setGroups(initialGroups);
+    setFilteredGroups(initialGroups);
     setActiveButton(buttonId);
     setState("find");
     setFilteredGroups(groups);
